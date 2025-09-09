@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MN ConnectingCar | Compra y venta de vehículos</title>
+  <meta name="description" content="Vendé sin renegar. Buscá con precisión. Elegí con respaldo. Nos ocupamos de buscar, filtrar, publicar, mostrar y cerrar la operación con transparencia y seguridad."/>
+  <meta name="theme-color" content="#0b3b5e"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .no-dim { filter: brightness(1.05) contrast(1.03) saturate(1.02); }
+
+    /* Fondo HERO 20% más visible: bajamos opacidad de los overlays */
+    .hero-bg{
+      /* antes: .55 y .65 -> ahora .44 y .52 (20% menos oscuridad) */
+      background-image: linear-gradient(rgba(0,0,0,.44), rgba(0,0,0,.52)), url('fondo%20de%20pagina.jpg');
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    }
+
+    /* Inputs visibles */
+    .search-form input, .search-form select, .search-form textarea { color:#111 !important; }
+    .search-form input::placeholder { color:#6b7280 !important; }
+
+    /* Botones con borde marcado */
+    button[class*="border"], a[class*="border"]{
+      border-width:2px !important;
+      border-color:#0f172a !important;
+      background:rgba(255,255,255,.96) !important;
+      color:#0f172a !important;
+      font-weight:600;
+      box-shadow:0 6px 16px rgba(0,0,0,.12);
+    }
+    button[class*="border"]:hover, a[class*="border"]:hover{ background:#f3f4f6 !important; }
+
+    /* Pasos del form */
+    .step { display:none; }
+    .step.active { display:block; }
+
+    /* Validaciones */
+    .input-error { border-color:#dc2626 !important; outline-color:#dc2626 !important; }
+    .error-text { color:#dc2626; font-size:12px; margin-top:4px; }
+    .req-asterisk { color:#dc2626; margin-left:4px; font-weight:700; }
+
+    /* LIGHTBOX a pantalla completa – imagen ENTERA */
+    #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;z-index:9999;padding:0;}
+    #lightbox img{max-width:100vw;max-height:100vh;width:auto;height:auto;object-fit:contain;border-radius:0;box-shadow:none;background:#000;}
+    #lightbox .close{position:absolute;top:16px;right:16px;font-size:32px;line-height:1;color:#fff;background:rgba(0,0,0,.5);border:0;padding:8px 14px;border-radius:10px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+    #lightbox .close:hover{background:rgba(255,255,255,.15);}
+
+    /* Modal de envío */
+    #sendOptions{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:9999;padding:20px;}
+    #sendOptions .box{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+    #sendOptions h3{font-size:20px;margin:0 0 8px 0;font-weight:600;}
+    #sendOptions p{margin:0 0 16px 0;color:#374151;}
+    #sendOptions .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;}
+    #sendOptions .btn{padding:10px 14px;border-radius:10px;border:1px solid #e5e7eb;cursor:pointer;font-weight:600;}
+    #sendOptions .btn-ghost{background:#fff;}
+    #sendOptions .btn-mail{background:#dc2626;color:#fff;border-color:#b91c1c;}
+    #sendOptions .btn-wa{background:#22c55e;color:#fff;border-color:#16a34a;}
+    #sendOptions .hint{background:#fffbeb;border:1px solid #f59e0b22;color:#92400e;padding:10px 12px;border-radius:10px;margin-top:8px;}
+
+    /* Toast de confirmación */
+    #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:10000;display:none;}
+    #toast .inner{background:#16a34a;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.25);font-weight:600;}
+  </style>
+</head>
+
+<!-- Fondo general 25% más oscuro: de bg-neutral-50 -> bg-neutral-200 -->
+<body class="bg-neutral-200 text-neutral-800 antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-neutral-200 no-dim">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <img src="logo%20png.png" alt="MN ConnectingCar" class="h-[72px] w-auto no-dim"/>
+      </a>
+      <a href="https://wa.me/5493476642514" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white shadow hover:bg-green-600 focus:outline-none no-dim">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.52 3.48a11.95 11.95 0 0 0-16.9 0c-4.66 4.66-4.66 12.23 0 16.9a11.95 11.95 0 0 0 16.9 0c4.66-4.66 4.66-12.23 0-16.9ZM12 21.25c-1.96 0-3.86-.57-5.48-1.64l-3.64 .96.97-3.64A9.76 9.76 0 1 1 12 21.25Zm4.96-6.22c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61 .14-.18 .28-.7 .89-.86 1.07-.16 .18-.32 .2-.6 .07-.28 -.14-1.19 -.44-2.26 -1.4 -.83 -.74 -1.39 -1.65 -1.55 -1.93 -.16 -.28 -.02 -.43 .12 -.57 .12 -.12 .28 -.32 .41 -.48 .14 -.16 .18 -.27 .27 -.45 .09 -.18 .05 -.34 -.02 -.48 -.07 -.14 -.61 -1.47 -.84 -2.02 -.22 -.53 -.45 -.46 -.61 -.47 h -.52 c -.18 0 -.48 .07 -.73 .34 -.25 .28 -.95 .93 -.95 2.26 0 1.33 .98 2.61 1.11 2.79 .14 .18 1.92 3.02 4.65 4.23 .65 .28 1.16 .45 1.56 .57 .65 .2 1.25 .17 1.72 .1 .52 -.08 1.63 -.66 1.87 -1.31 .23 -.64 .23 -1.2 .16 -1.31 -.07 -.11 -.25 -.18 -.52 -.32 Z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-bg text-white">
+    <!-- Overlay 20% menos oscuro: de bg-black/60 -> bg-black/40 -->
+    <div class="bg-black/40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div class="max-w-3xl">
+          <h1 class="font-semibold text-4xl md:text-5xl leading-tight">Vendé sin renegar. Buscá con precisión. Elegí con respaldo.</h1>
+          <p class="mt-4 text-lg text-neutral-200">¿Querés comprar o vender un vehículo sin lidiar con publicaciones, llamados, mensajes o personas que no van en serio? Nuestro servicio se encarga de todo el proceso por vos. Nos ocupamos de buscar, filtrar, publicar, mostrar y cerrar la operación con transparencia y seguridad. Vos solo decidís cuándo avanzar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSCAR (fondo más oscuro) -->
+  <section id="buscar" class="py-14 bg-neutral-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl font-semibold">Buscar un vehículo</h2>
+      <form id="form-buscar" class="search-form mt-4 grid grid-cols-1 md:grid-cols-7 gap-3 bg-white p-4 rounded-xl border border-neutral-200">
+        <select name="tipo" class="px-3 py-2 rounded-lg border border-neutral-300">
+          <option value="">Tipo</option>
+          <option>Autos</option>
+          <option>Camionetas</option>
+          <option>Camiones</option>
+          <option>Motos</option>
+          <option>Maquinaria</option>
+          <option>Utilitario</option>
+        </select>
+        <input name="marca" type="text" class="px-3 py-2 rounded-lg border border-neutral-300" placeholder="Marca"/>
+        <input name="modelo" type="text" class="px-3 py-2 rounded-lg border border-neutral-300" placeholder="Modelo"/>
+        <input name="version" type="text" class="px-3 py-2 rounded-lg border border-neutral-300" placeholder="Versión"/>
+        <input name="anio" type="number" class="px-3 py-2 rounded-lg border border-neutral-300" placeholder="Año"/>
+        <input id="buscar-precio" name="precio" type="text" inputmode="numeric" class="px-3 py-2 rounded-lg border border-neutral-300" placeholder="Precio (máx)"/>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white md:col-span-1">Buscar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- DESTACADOS -->
+  <section id="destacados" class="py-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-2xl font-semibold">Publicaciones destacadas</h2>
+      </div>
+      <p class="text-sm text-neutral-700 mb-6">Tocá la foto para verla a pantalla completa. Usá la <strong>X</strong> para salir.</p>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card — Ford Cargo -->
+        <article data-has-more="false" data-nombre="Ford Cargo" data-anio="2010" data-precio="U$D 35000" class="bg-white rounded-xl shadow overflow-hidden border border-neutral-200">
+          <img src="ford%20cargo.jpg" alt="Ford Cargo" class="w-full h-48 object-cover"/>
+          <div class="p-4">
+            <h3 class="font-semibold">Ford Cargo</h3>
+            <ul class="mt-1 text-sm text-neutral-700 space-y-1">
+              <li><strong>Año:</strong> 2010</li>
+            </ul>
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <span class="font-semibold text-lg price">U$D 35000</span>
+              <div class="flex items-center gap-2">
+                <a href="https://wa.me/5493476642514?text=Hola%2C%20me%20interesa%20Ford%20Cargo%20(2010).%20Precio%3A%20U%24D%2035000.%20%C2%BFSigue%20disponible%3F" target="_blank" rel="noopener" aria-label="WhatsApp"
+                   class="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 no-dim">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.52 3.48a11.95 11.95 0 0 0-16.9 0c-4.66 4.66-4.66 12.23 0 16.9a11.95 11.95 0 0 0 16.9 0c4.66-4.66 4.66-12.23 0-16.9ZM12 21.25c-1.96 0-3.86-.57-5.48-1.64l-3.64 .96.97-3.64A9.76 9.76 0 1 1 12 21.25Zm4.96-6.22c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61 .14-.18 .28-.7 .89-.86 1.07-.16 .18-.32 .2-.6 .07-.28 -.14-1.19 -.44-2.26 -1.4 -.83 -.74 -1.39 -1.65 -1.55 -1.93 -.16 -.28 -.02 -.43 .12 -.57 .12 -.12 .28 -.32 .41 -.48 .14 -.16 .18 -.27 .27 -.45 .09 -.18 .05 -.34 -.02 -.48 -.07 -.14 -.61 -1.47 -.84 -2.02 -.22 -.53 -.45 -.46 -.61 -.47 h -.52 c -.18 0 -.48 .07 -.73 .34 -.25 .28 -.95 .93 -.95 2.26 0 1.33 .98 2.61 1.11 2.79 .14 .18 1.92 3.02 4.65 4.23 .65 .28 1.16 .45 1.56 .57 .65 .2 1.25 .17 1.72 .1 .52 -.08 1.63 -.66 1.87 -1.31 .23 -.64 .23 -1.2 .16 -1.31 -.07 -.11 -.25 -.18 -.52 -.32 Z"/></svg>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card — Honda 100 -->
+        <article data-has-more="false" data-nombre="Honda 100" data-anio="1981" data-precio="$2000000" class="bg-white rounded-xl shadow overflow-hidden border border-neutral-200">
+          <img src="honda%20100%20(2).jpg" alt="Honda 100" class="w-full h-48 object-cover"/>
+          <div class="p-4">
+            <h3 class="font-semibold">Honda 100</h3>
+            <ul class="mt-1 text-sm text-neutral-700 space-y-1">
+              <li><strong>Año:</strong> 1981</li>
+            </ul>
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <span class="font-semibold text-lg price">$2000000</span>
+              <div class="flex items-center gap-2">
+                <a href="https://wa.me/5493476642514?text=Hola%2C%20me%20interesa%20Honda%20100%20(1981).%20Precio%3A%20%242000000.%20%C2%BFSigue%20disponible%3F" target="_blank" rel="noopener" aria-label="WhatsApp"
+                   class="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 no-dim">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.52 3.48a11.95 11.95 0 0 0-16.9 0c-4.66 4.66-4.66 12.23 0 16.9a11.95 11.95 0 0 0 16.9 0c4.66-4.66 4.66-12.23 0-16.9ZM12 21.25c-1.96 0-3.86-.57-5.48-1.64l-3.64 .96.97-3.64A9.76 9.76 0 1 1 12 21.25Zm4.96-6.22c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61 .14-.18 .28-.7 .89-.86 1.07-.16 .18-.32 .2-.6 .07-.28 -.14-1.19 -.44-2.26 -1.4 -.83 -.74 -1.39 -1.65 -1.55 -1.93 -.16 -.28 -.02 -.43 .12 -.57 .12 -.12 .28 -.32 .41 -.48 .14 -.16 .18 -.27 .27 -.45 .09 -.18 .05 -.34 -.02 -.48 -.07 -.14 -.61 -1.47 -.84 -2.02 -.22 -.53 -.45 -.46 -.61 -.47 h -.52 c -.18 0 -.48 .07 -.73 .34 -.25 .28 -.95 .93 -.95 2.26 0 1.33 .98 2.61 1.11 2.79 .14 .18 1.92 3.02 4.65 4.23 .65 .28 1.16 .45 1.56 .57 .65 .2 1.25 .17 1.72 .1 .52 -.08 1.63 -.66 1.87 -1.31 .23 -.64 .23 -1.2 .16 -1.31 -.07 -.11 -.25 -.18 -.52 -.32 Z"/></svg>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        
+
+        <!-- Card — Renault Logan -->
+        <article data-has-more="false" data-nombre="Renault Logan" data-anio="2013" data-precio="$9000000" class="bg-white rounded-xl shadow overflow-hidden border border-neutral-200">
+          <img src="logan%2013%20(2).jpg" alt="Renault Logan" class="w-full h-48 object-cover"/>
+          <div class="p-4">
+            <h3 class="font-semibold">Renault Logan</h3>
+            <ul class="mt-1 text-sm text-neutral-700 space-y-1">
+              <li><strong>Año:</strong> 2013</li>
+            </ul>
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <span class="font-semibold text-lg price">$9000000</span>
+              <div class="flex items-center gap-2">
+                <a href="https://wa.me/5493476642514?text=Hola%2C%20me%20interesa%20Renault%20Logan%20(2013).%20Precio%3A%20%249000000.%20%C2%BFSigue%20disponible%3F" target="_blank" rel="noopener" aria-label="WhatsApp"
+                   class="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 no-dim">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.52 3.48a11.95 11.95 0 0 0-16.9 0c-4.66 4.66-4.66 12.23 0 16.9a11.95 11.95 0 0 0 16.9 0c4.66-4.66 4.66-12.23 0-16.9ZM12 21.25c-1.96 0-3.86-.57-5.48-1.64l-3.64 .96.97-3.64A9.76 9.76 0 1 1 12 21.25Zm4.96-6.22c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61 .14-.18 .28-.7 .89-.86 1.07-.16 .18-.32 .2-.6 .07-.28 -.14-1.19 -.44-2.26 -1.4 -.83 -.74 -1.39 -1.65 -1.55 -1.93 -.16 -.28 -.02 -.43 .12 -.57 .12 -.12 .28 -.32 .41 -.48 .14 -.16 .18 -.27 .27 -.45 .09 -.18 .05 -.34 -.02 -.48 -.07 -.14 -.61 -1.47 -.84 -2.02 -.22 -.53 -.45 -.46 -.61 -.47 h -.52 c -.18 0 -.48 .07 -.73 .34 -.25 .28 -.95 .93 -.95 2.26 0 1.33 .98 2.61 1.11 2.79 .14 .18 1.92 3.02 4.65 4.23 .65 .28 1.16 .45 1.56 .57 .65 .2 1.25 .17 1.72 .1 .52 -.08 1.63 -.66 1.87 -1.31 .23 -.64 .23 -1.2 .16 -1.31 -.07 -.11 -.25 -.18 -.52 -.32 Z"/></svg>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA PUBLICAR -->
+  <section class="py-12 bg-amber-100 border-y border-amber-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="md:flex items-center justify-content-between">
+        <div class="max-w-2xl">
+          <h2 class="text-2xl font-semibold">¿Querés vender tu vehículo?</h2>
+          <p class="mt-2 text-neutral-700">Publicá gratis y recibí contactos por WhatsApp. Nosotros te ayudamos con las fotos y los datos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLICAR (fondo más oscuro) -->
+  <section id="publicar" class="py-16 bg-neutral-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl font-semibold mb-2">Publicá tu vehículo en pocos pasos</h2>
+      <p class="text-sm text-neutral-700 mb-6"><span class="req-asterisk" aria-hidden="true">*</span> Campos obligatorios</p>
+
+      <form onsubmit="handleSubmit(event)" class="bg-white rounded-2xl shadow p-6 border border-neutral-200">
+        <!-- Paso 1 -->
+        <div class="step active" data-step="1">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-neutral-600" for="tipo">Tipo</label>
+              <select id="tipo" name="tipo" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900">
+                <option>Autos</option>
+                <option>Camionetas</option>
+                <option>Camiones</option>
+                <option>Motos</option>
+                <option>Maquinaria</option>
+                <option>Utilitario</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="marca">Marca <span class="req-asterisk">*</span></label>
+              <input id="marca" name="marca" type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: Ford"/>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="modelo">Modelo <span class="req-asterisk">*</span></label>
+              <input id="modelo" name="modelo" type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: Cargo 1517e"/>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="version">Versión</label>
+              <input id="version" name="version" type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: Full / XLT / 1.6 Confort"/>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="anio">Año <span class="req-asterisk">*</span></label>
+              <input id="anio" name="anio" type="number" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: 2012"/>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="km">Kilometraje</label>
+              <input id="km" name="km" type="number" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: 120000"/>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm text-neutral-600" for="precio">Precio <span class="req-asterisk">*</span></label>
+              <input id="precio" name="precio" type="text" inputmode="numeric" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: 9.000.000"/>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-between">
+            <span></span>
+            <button type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white" onclick="goToStep(2)">Siguiente</button>
+          </div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="step" data-step="2">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-neutral-600" for="comb">Combustible</label>
+              <select id="comb" name="comb" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900">
+                <option>Nafta</option>
+                <option>Diésel</option>
+                <option>GNC</option>
+                <option>Híbrido</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="transm">Transmisión</label>
+              <select id="transm" name="transm" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900">
+                <option>Manual</option>
+                <option>Automática</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm text-neutral-600" for="desc">Descripción</label>
+              <textarea id="desc" name="desc" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" rows="4" placeholder="Contá detalles importantes (estado, servicios, accesorios)"></textarea>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-between">
+            <button type="button" class="px-4 py-2 rounded-lg border border-neutral-300" onclick="goToStep(1)">Volver</button>
+            <button type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white" onclick="goToStep(3)">Siguiente</button>
+          </div>
+        </div>
+
+        <!-- Paso 3: Datos de contacto + ubicación -->
+        <div class="step" data-step="3">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-neutral-600" for="nombre">Nombre <span class="req-asterisk">*</span></label>
+              <input id="nombre" name="nombre" type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Tu nombre"/>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-600" for="wsp">WhatsApp <span class="req-asterisk">*</span></label>
+              <input id="wsp" name="wsp" type="tel" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Tu número"/>
+            </div>
+
+            <!-- Provincia (incluye CABA) -->
+            <div>
+              <label class="text-sm text-neutral-600" for="provincia">Provincia</label>
+              <select id="provincia" name="provincia" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900">
+                <option value="" selected>Seleccioná provincia</option>
+                <option>Buenos Aires</option>
+                <option>CABA</option>
+                <option>Catamarca</option>
+                <option>Chaco</option>
+                <option>Chubut</option>
+                <option>Córdoba</option>
+                <option>Corrientes</option>
+                <option>Entre Ríos</option>
+                <option>Formosa</option>
+                <option>Jujuy</option>
+                <option>La Pampa</option>
+                <option>La Rioja</option>
+                <option>Mendoza</option>
+                <option>Misiones</option>
+                <option>Neuquén</option>
+                <option>Río Negro</option>
+                <option>Salta</option>
+                <option>San Juan</option>
+                <option>San Luis</option>
+                <option>Santa Cruz</option>
+                <option>Santa Fe</option>
+                <option>Santiago del Estero</option>
+                <option>Tierra del Fuego</option>
+                <option>Tucumán</option>
+              </select>
+            </div>
+
+            <!-- Ciudad -->
+            <div>
+              <label class="text-sm text-neutral-600" for="ciudad">Ciudad</label>
+              <input id="ciudad" name="ciudad" type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-neutral-300 text-neutral-900" placeholder="Ej: Capitán Bermúdez"/>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-between">
+            <button type="button" class="px-4 py-2 rounded-lg border border-neutral-300" onclick="goToStep(2)">Volver</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white">Publicar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- CONTACTO + MAPA -->
+  <section id="contacto" class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-xl font-semibold">Contacto</h3>
+          <p class="mt-2 text-neutral-700">Escribinos para publicar, buscar o coordinar una visita.</p>
+          <ul class="mt-4 space-y-2 text-neutral-700">
+            <li>Email: <a class="text-blue-700 hover:underline" href="mailto:marcelo.mnconnectingcar@gmail.com">marcelo.mnconnectingcar@gmail.com</a></li>
+            <li>WhatsApp: <a class="text-blue-700 hover:underline" href="https://wa.me/5493476642514">+54 9 3476 642514</a></li>
+          </ul>
+        </div>
+        <div class="bg-neutral-100 border border-neutral-200 rounded-xl p-4">
+          <iframe class="w-full h-64 rounded-lg" src="https://maps.google.com/maps?q=Capit%C3%A1n%20Berm%C3%BAdez%2C%20Santa%20Fe&t=&z=13&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Términos y Privacidad (fondos más oscuros) -->
+  <section id="terminos" class="py-16 bg-neutral-200 border-t border-neutral-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 prose prose-neutral max-w-none">
+      <h1>Términos y Condiciones</h1>
+      <p><strong>Última actualización:</strong> 27/08/2025</p>
+      <p><strong>MN ConnectingCar</strong> (el “Sitio” o el “Servicio”) es una plataforma de intermediación que ayuda a personas a vender y buscar vehículos usados.</p>
+      <p><strong>Titular:</strong> Marcelo Sebastián Nicolini — <strong>CUIL:</strong> 20320762090 — <strong>Email:</strong> marcelo.mnconnectingcar@gmail.com — <strong>WhatsApp:</strong> +54 9 3476 642514.</p>
+
+      <h2>1) Aceptación</h2>
+      <p>Al usar el Sitio aceptás estos Términos y nuestra Política de Privacidad.</p>
+
+      <h2>2) Edad y responsabilidad</h2>
+      <p>Debés ser mayor de 18 años y brindar datos veraces. Sos responsable por la actividad realizada con tu información.</p>
+
+      <h2>3) Alcance del servicio</h2>
+      <ul>
+        <li>El Sitio no es propietario de los vehículos publicados.</li>
+        <li>Brindamos intermediación: búsqueda, filtrado, publicación, coordinación de visitas y asistencia en la operación.</li>
+        <li>No garantizamos la concreción de ninguna compra/venta ni el estado de los vehículos; la verificación final corresponde a comprador y vendedor.</li>
+      </ul>
+
+      <h2>4) Publicaciones y contenido</h2>
+      <ul>
+        <li>Quien publica declara que la información del vehículo es exacta y que tiene derecho a venderlo.</li>
+        <li>Fotos y textos deben respetar derechos de autor; nos otorgás licencia no exclusiva para exhibirlos en el Sitio y redes del servicio.</li>
+        <li>Podemos editar, pausar o dar de baja publicaciones que incumplan estos Términos o resulten engañosas.</li>
+      </ul>
+
+      <h2>5) Conductas no permitidas</h2>
+      <ul>
+        <li>Datos falsos o suplantación de identidad.</li>
+        <li>Publicar vehículos robados, sin documentación o con datos adulterados.</li>
+        <li>Contenido ofensivo/ilegal o que infrinja derechos de terceros.</li>
+        <li>Uso automatizado que afecte el funcionamiento del Sitio.</li>
+      </ul>
+
+      <h2>6) Contacto y comunicaciones</h2>
+      <p>Podemos contactarte por email o WhatsApp (p. ej., consultas, coordinación de visitas, avances). WhatsApp es un servicio de terceros con sus propias reglas.</p>
+
+      <h2>7) Honorarios / comisiones</h2>
+      <p>[Opcional] La intermediación puede incluir honorarios o comisiones pactadas previamente por escrito con el cliente.</p>
+
+      <h2>8) Limitación de responsabilidad</h2>
+      <p>En la máxima medida legal, el Sitio no será responsable por daños indirectos o pérdidas derivadas del uso del Servicio. Transacciones, verificaciones mecánicas y documentación son responsabilidad de comprador y vendedor.</p>
+
+      <h2>9) Propiedad intelectual</h2>
+      <p>El logo, diseño del Sitio y elementos de marca son de titularidad del Sitio o de sus licenciantes. Prohibido su uso sin autorización.</p>
+
+      <h2>10) Baja y suspensión</h2>
+      <p>Podemos suspender o dar de baja el acceso por incumplimientos o por requerimiento de autoridad competente.</p>
+
+      <h2>11) Denuncias y reclamos</h2>
+      <p>Escribinos a <a href="mailto:marcelo.mnconnectingcar@gmail.com">marcelo.mnconnectingcar@gmail.com</a> para denunciar contenido ilegal o violatorio de derechos.</p>
+
+      <h2>12) Modificaciones</h2>
+      <p>Podemos actualizar estos Términos y publicaremos la versión vigente con su fecha.</p>
+
+      <h2>13) Ley aplicable y jurisdicción</h2>
+      <p>Se rigen por las leyes de la República Argentina. Jurisdicción: tribunales del domicilio del titular del Sitio, salvo normativa de defensa del consumidor aplicable.</p>
+    </div>
+  </section>
+
+  <section id="privacidad" class="py-16 bg-neutral-200 border-t border-neutral-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 prose prose-neutral max-w-none">
+      <h1>Política de Privacidad</h1>
+      <p><strong>Última actualización:</strong> 27/08/2025</p>
+
+      <h2>1) Responsable del tratamiento</h2>
+      <p>Marcelo Sebastián Nicolini — CUIL: 20320762090 — Email: <a href="mailto:marcelo.mnconnectingcar@gmail.com">marcelo.mnconnectingcar@gmail.com</a></p>
+
+      <h2>2) Datos que recolectamos</h2>
+      <ul>
+        <li><strong>Contacto:</strong> nombre, email, número de WhatsApp.</li>
+        <li><strong>Vehículo:</strong> marca, modelo, versión, año, kilometraje, precio, descripción y links a fotos.</li>
+        <li><strong>Uso del sitio:</strong> datos técnicos básicos (IP aproximada, dispositivo/navegador, cookies) para seguridad y métricas.</li>
+      </ul>
+
+      <h2>3) Finalidades</h2>
+      <ul>
+        <li>Operar el servicio de publicación y búsqueda de vehículos.</li>
+        <li>Comunicar avances, coordinar visitas y responder consultas (email/WhatsApp).</li>
+        <li>Mejorar el Sitio, prevenir fraude/abuso y cumplir obligaciones legales.</li>
+        <li>[Opcional] Enviar avisos o novedades del servicio (con opción de baja).</li>
+      </ul>
+
+      <h2>4) Base legal</h2>
+      <p>Consentimiento, ejecución de solicitudes que realizás y nuestro interés legítimo en operar el Sitio de manera segura.</p>
+
+      <h2>5) Destinatarios y transferencias</h2>
+      <ul>
+        <li>Proveedores tecnológicos (hosting, correo, analítica) bajo acuerdos de confidencialidad.</li>
+        <li>WhatsApp/Meta cuando interactuamos por ese canal.</li>
+        <li>Autoridades públicas ante obligación legal.</li>
+        <li>Tus datos pueden alojarse fuera de Argentina; adoptamos medidas de protección adecuadas.</li>
+      </ul>
+
+      <h2>6) Plazos de conservación</h2>
+      <p>Mientras dure la relación y por el tiempo necesario para cumplir obligaciones legales/defensa de derechos; luego los eliminamos o anonimizamos.</p>
+
+      <h2>7) Seguridad</h2>
+      <p>Medidas técnicas y organizativas razonables; ningún sistema es 100% infalible.</p>
+
+      <h2>8) Tus derechos</h2>
+      <p>Podés ejercer derechos ARCO y revocar tu consentimiento escribiendo a <a href="mailto:marcelo.mnconnectingcar@gmail.com">marcelo.mnconnectingcar@gmail.com</a>. Autoridad de aplicación: AAIP (Ley 25.326).</p>
+
+      <h2>9) Cookies</h2>
+      <p>Usamos cookies necesarias y, eventualmente, de medición/analítica. Podés gestionar preferencias desde tu navegador. Si sumamos cookies no esenciales, mostraremos un aviso para aceptarlas o rechazarlas.</p>
+
+      <h2>10) Menores</h2>
+      <p>El Sitio no está dirigido a menores de 18 años. Si detectamos datos de un menor, los eliminaremos.</p>
+
+      <h2>11) Cambios</h2>
+      <p>Podemos actualizar esta Política e informaremos la fecha de vigencia. Si los cambios son importantes, intentaremos avisarte por un medio razonable.</p>
+
+      <h2>12) Contacto</h2>
+      <p>Consultas sobre privacidad o ejercicio de derechos: <a href="mailto:marcelo.mnconnectingcar@gmail.com">marcelo.mnconnectingcar@gmail.com</a></p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-10 bg-neutral-900 text-neutral-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="md:flex items-center justify-between">
+        <p>&copy; <span id="year"></span> MN ConnectingCar. Todos los derechos reservados.</p>
+        <div class="flex gap-4 mt-4 md:mt-0">
+          <a href="#terminos" class="hover:text-white">Términos</a>
+          <a href="#privacidad" class="hover:text-white">Privacidad</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button class="close" aria-label="Cerrar (Esc)">×</button>
+    <img id="lightbox-img" src="" alt="Imagen expandida"/>
+  </div>
+
+  <!-- Modal enviar -->
+  <div id="sendOptions" role="dialog" aria-modal="true" aria-label="Elegir método de envío">
+    <div class="box">
+      <h3>¿Cómo querés enviar la publicación?</h3>
+      <p>Elegí si preferís <strong>WhatsApp</strong> o <strong>Email</strong>. Vamos a abrir tu app con el mensaje armado.</p>
+      <div class="hint">Recordatorio: te contactamos por el canal que elijas.</div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="document.getElementById('sendOptions').style.display='none'">Cancelar</button>
+        <button class="btn btn-mail" onclick="(function(){ const p=window._mncc_payload; if(p){ window.open(p.mailto,'_blank'); showToast('¡Tu publicación fue enviada por Email!'); } document.getElementById('sendOptions').style.display='none'; })()">Enviar por Email</button>
+        <button class="btn btn-wa" onclick="(function(){ const p=window._mncc_payload; if(p){ window.open(p.wa,'_blank'); showToast('¡Tu publicación fue enviada por WhatsApp!'); } document.getElementById('sendOptions').style.display='none'; })()">Enviar por WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"><div class="inner" role="status" aria-live="polite">¡Tu publicación fue enviada!</div></div>
+
+  <script>
+    function goToStep(n){
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+      document.querySelector('#publicar').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    /* (Queda por compatibilidad; ya no se usa para el buscador) */
+    function buscarVehiculos(){
+      const dest = document.getElementById('destacados');
+      if(dest){ dest.scrollIntoView({behavior:'smooth'}); }
+    }
+
+    function showToast(msg){
+      const t = document.getElementById('toast');
+      const inner = t.querySelector('.inner');
+      inner.textContent = msg || '¡Tu publicación fue enviada!';
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 3500);
+    }
+
+    // Lightbox fullscreen con X arriba a la derecha
+    (function(){
+      var lb = document.getElementById('lightbox');
+      var imgEl = document.getElementById('lightbox-img');
+      var closeBtn = lb.querySelector('.close');
+
+      function openLB(src, alt){
+        imgEl.src = src;
+        imgEl.alt = alt || 'Imagen expandida';
+        lb.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLB(){
+        lb.style.display = 'none';
+        imgEl.src = '';
+        document.body.style.overflow = '';
+      }
+      document.querySelectorAll('#destacados img').forEach(function(img){
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(){
+          var full = img.getAttribute('data-full') || img.src;
+          openLB(full, img.alt);
+        });
+      });
+      lb.addEventListener('click', function(e){
+        if(e.target === lb) closeLB();
+      });
+      closeBtn.addEventListener('click', closeLB);
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape') closeLB();
+      });
+    })();
+
+    // Ocultar "Ver más" si no hay más fotos
+    document.querySelectorAll('article[data-has-more]').forEach(card => {
+      const hasMore = card.getAttribute('data-has-more') === 'true';
+      if(!hasMore){
+        const link = card.querySelector('.more-link');
+        if(link) link.remove();
+      }
+    });
+
+    // Footer año dinámico
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // --- Helpers de números ---
+    const nf = new Intl.NumberFormat('es-AR');
+    const digitsOnly = (s) => (s || '').toString().replace(/\D+/g, '');
+
+    // Precio (formulario) con miles
+    (function livePriceFormatting(){
+      const input = document.getElementById('precio');
+      if(!input) return;
+      const fmt = (raw) => { const d = digitsOnly(raw); return d ? nf.format(parseInt(d,10)) : ''; };
+      input.addEventListener('input', () => {
+        const caretFromEnd = input.value.length - (input.selectionStart || input.value.length);
+        input.value = fmt(input.value);
+        const newPos = Math.max(0, input.value.length - caretFromEnd);
+        input.setSelectionRange(newPos, newPos);
+      });
+      input.addEventListener('blur', () => { input.value = fmt(input.value); });
+    })();
+
+    // Precio (máx) del buscador con miles
+    (function liveSearchPriceFormatting(){
+      const input = document.getElementById('buscar-precio');
+      if(!input) return;
+      const fmt = (raw) => { const d = digitsOnly(raw); return d ? nf.format(parseInt(d,10)) : ''; };
+      input.addEventListener('input', () => {
+        const caretFromEnd = input.value.length - (input.selectionStart || input.value.length);
+        input.value = fmt(input.value);
+        const newPos = Math.max(0, input.value.length - caretFromEnd);
+        input.setSelectionRange(newPos, newPos);
+      });
+      input.addEventListener('blur', () => { input.value = fmt(input.value); });
+    })();
+
+    /* —— Enviar la búsqueda por WhatsApp —— */
+    (function wireSearchToWhatsApp(){
+      const f = document.getElementById('form-buscar');
+      if(!f) return;
+      f.addEventListener('submit', function(e){
+        e.preventDefault();
+        enviarBusquedaWA();
+      });
+    })();
+
+    function enviarBusquedaWA(){
+      const f = document.getElementById('form-buscar');
+      const get = n => (f.querySelector(`[name="${n}"]`)?.value || '').trim();
+
+      const tipo    = get('tipo');
+      const marca   = get('marca');
+      const modelo  = get('modelo');
+      const version = get('version');
+      const anio    = get('anio');
+      const precioH = get('precio');
+
+      // Al menos un campo
+      const completados = [tipo, marca, modelo, version, anio, precioH].filter(Boolean).length;
+      if(!completados){
+        showToast('Completá al menos un campo para buscar');
+        f.querySelector('[name="tipo"]').focus();
+        return;
+      }
+
+      // Precio formateado
+      const precioNum = digitsOnly(precioH);
+      const precioFmt = precioNum ? ('$' + nf.format(parseInt(precioNum,10))) : '—';
+
+      const lineas = [
+        'Consulta de búsqueda desde MN ConnectingCar',
+        '',
+        `Tipo: ${tipo || '—'}`,
+        `Marca: ${marca || '—'}`,
+        `Modelo: ${modelo || '—'}`,
+        `Versión: ${version || '—'}`,
+        `Año: ${anio || '—'}`,
+        `Precio máx.: ${precioFmt}`
+      ];
+
+      const text = encodeURIComponent(lineas.join('\n'));
+      const wa = `https://wa.me/5493476642514?text=${text}`;
+
+      window.open(wa, '_blank');
+      showToast('¡Tu búsqueda fue enviada por WhatsApp!');
+
+      const dest = document.getElementById('destacados');
+      if(dest){ dest.scrollIntoView({behavior:'smooth'}); }
+    }
+
+    // Envío con validaciones + modal (form Publicar)
+    function handleSubmit(e){
+      e.preventDefault();
+      const v = id => (document.getElementById(id)?.value || '').trim();
+      const el = id => document.getElementById(id);
+      const setErr = (id, msg) => {
+        const node = el(id);
+        if(!node) return;
+        node.classList.add('input-error');
+        const wrap = node.parentElement || node;
+        let msgEl = wrap.querySelector('.error-text');
+        if(!msgEl){
+          msgEl = document.createElement('div');
+          msgEl.className = 'error-text';
+          wrap.appendChild(msgEl);
+        }
+        msgEl.textContent = msg;
+      };
+      const clearErr = (id) => {
+        const node = el(id);
+        if(!node) return;
+        node.classList.remove('input-error');
+        const wrap = node.parentElement || node;
+        const msgEl = wrap.querySelector('.error-text');
+        if(msgEl) msgEl.remove();
+      };
+
+      ['marca','modelo','anio','precio','nombre','wsp'].forEach(clearErr);
+
+      const tipo = v('tipo');
+      const marca = v('marca');
+      const version = v('version');
+      const modelo = v('modelo');
+      const anio = v('anio');
+      const km = v('km');
+      const precioHuman = v('precio');
+      const precio = digitsOnly(precioHuman);
+      const comb = v('comb');
+      const transm = v('transm');
+      const desc = v('desc');
+      const nombre = v('nombre');
+      const wsp = v('wsp');
+      const provincia = v('provincia');
+      const ciudad = v('ciudad');
+
+      let ok = true;
+      if(!marca){ setErr('marca','Ingresá la marca'); ok = false; }
+      if(!modelo){ setErr('modelo','Ingresá el modelo'); ok = false; }
+      if(!anio){
+        setErr('anio','Ingresá el año'); ok = false;
+      } else {
+        const y = parseInt(anio,10);
+        const now = new Date().getFullYear() + 1;
+        if(isNaN(y) || y < 1950 || y > now){ setErr('anio',`Año inválido (1950–${now})`); ok = false; }
+      }
+      if(!precio){
+        setErr('precio','Ingresá el precio'); ok = false;
+      } else {
+        const p = Number(precio);
+        if(isNaN(p) || p <= 0){ setErr('precio','Precio inválido'); ok = false; }
+      }
+      if(!nombre){ setErr('nombre','Ingresá tu nombre'); ok = false; }
+      if(!wsp){
+        setErr('wsp','Ingresá tu WhatsApp'); ok = false;
+      } else {
+        const digits = wsp.replace(/\D+/g,'');
+        if(digits.length < 8){ setErr('wsp','Número muy corto'); ok = false; }
+      }
+
+      if(!ok){
+        const firstErr = document.querySelector('.input-error');
+        if(firstErr){
+          firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+          firstErr.focus?.();
+        }
+        return;
+      }
+
+      const precioMostrar = precio ? nf.format(parseInt(precio,10)) : '';
+
+      const mensaje = `Nueva publicación desde MN ConnectingCar%0A%0A`
+        + `Nombre: ${nombre}%0A`
+        + `WhatsApp: ${wsp}%0A`
+        + `Provincia/Ciudad: ${provincia} ${ciudad ? '- ' + ciudad : ''}%0A%0A`
+        + `Vehículo: ${marca} ${modelo} (${anio})%0A`
+        + `Versión: ${version}%0A`
+        + `Tipo: ${tipo}%0A`
+        + `KM: ${km}%0A`
+        + `Precio: $${precioMostrar}%0A`
+        + `Combustible: ${comb}%0A`
+        + `Transmisión: ${transm}%0A%0A`
+        + `Descripción:%0A${desc}`;
+
+      const subject = `Nueva publicación - ${marca} ${modelo} ${anio}`.trim();
+      const mailto = `mailto:marcelo.mnconnectingcar@gmail.com?subject=${encodeURIComponent(subject)}&body=${mensaje}`;
+      const wa = `https://wa.me/5493476642514?text=${mensaje}`;
+
+      window._mncc_payload = { mailto, wa };
+      const modal = document.getElementById('sendOptions');
+      if (modal){
+        modal.style.display = 'flex';
+        showToast('¡Datos listos! Elegí WhatsApp o Email');
+      }
+    }
+
+    // --- Formatear precios con separadores de miles (todas las cards) ---
+    (function formatAllCardPrices(){
+      const nfLocal = new Intl.NumberFormat('es-AR');
+      document.querySelectorAll('#destacados article').forEach(card=>{
+        const span = card.querySelector('.price');
+        const raw = (span?.textContent || '').trim(); // Ej: "$2000000" o "U$D 35000"
+        if(!raw) return;
+
+        let prefix = '';
+        let numStr = raw;
+        if (raw.startsWith('U$D')) {
+          prefix = 'U$D ';
+          numStr = raw.replace('U$D','').trim();
+        } else if (raw.startsWith('$')) {
+          prefix = '$';
+          numStr = raw.replace('$','').trim();
+        }
+
+        const onlyDigits = numStr.replace(/\D+/g,'');
+        if(!onlyDigits) return;
+        const formatted = nfLocal.format(parseInt(onlyDigits,10));
+        span.textContent = prefix + formatted; // "$2.000.000" o "U$D 35.000"
+      });
+    })();
+  </script>
+</body>
+</html>
